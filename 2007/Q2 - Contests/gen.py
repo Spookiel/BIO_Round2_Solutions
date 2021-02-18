@@ -1,6 +1,8 @@
 import random
+import os
+import subprocess
 MAXGRAPHSIZE = 5000
-CHANCE = 50
+CHANCE = 70
 parent = [0]*(MAXGRAPHSIZE+1)
 # Needs to generate a connected graph, with an even number of nodes
 # Using a DSU, add edges to the graph sequentially checking for connnectivity at each edge added
@@ -26,7 +28,7 @@ def unite(a, b):
         parent[d] = c
 
 
-def checkSol():
+def checkSol(nodes):
 
     with open("contests.in", "r") as fin:
         nnodes = int(fin.readline())
@@ -45,7 +47,7 @@ def checkSol():
 
 
 
-def check():
+def check(nodes):
     f = find(1)
     for i in range(2, nodes+1):
         if find(i)!=f:
@@ -53,8 +55,11 @@ def check():
     return True
 
 def generate():
+    nodes = random.choice([i for i in range(2, MAXGRAPHSIZE, 2)])
+    initialise(nodes)
+
     edges = set()
-    while not check():
+    while not check(nodes):
         # Draw a random edge between two components
         while True:
             start, end = random.randint(1, nodes), random.randint(1, nodes)
@@ -63,7 +68,6 @@ def generate():
         unite(start, end)
         edges.add((start, end))
         edges.add((end, start))
-    print(nodes, len(edges)//2)
     with open("contests.in", "w+") as fin:
         fin.write(f"{nodes}\n")
         while edges:
@@ -71,19 +75,33 @@ def generate():
             edges.remove((e, s))
             fin.write(f"{s} {e}\n")
         fin.write("-1 -1\n")
-nodes = random.choice([i for i in range(2, MAXGRAPHSIZE, 2)])
-initialise(nodes)
+    return nodes
+
+import time
+def stress(fname, NUMTESTS=1000):
+    for i in range(NUMTESTS):
+        nodes = generate()
+        start = time.time()
+        subprocess.check_call(os.getcwd()+"/"+fname, stdout=None)
+        if not checkSol(nodes):
+            print("FAILED")
+            break
+        print("COMPLETED IN", time.time()-start)
+    print("-----------------")
+    print(f"Completed {NUMTESTS} tests successfully")
+
+def checkOne():
+    if input("GEN NEW: (y/n)") in "yesYes":
+        generate()
+
+    input("Check halt: ")
+    isCorrect = checkSol()
 
 
-if input("GEN NEW: (y/n)") in "yesYes":
-    generate()
 
-isCorrect = checkSol()
+    print(isCorrect)
 
-
-
-print(isCorrect)
-
+stress("contests", 1000)
 
 
 
