@@ -2,7 +2,7 @@ import random
 import os
 import subprocess
 MAXGRAPHSIZE = 5000
-CHANCE = 70
+CHANCE = 0
 parent = [0]*(MAXGRAPHSIZE+1)
 # Needs to generate a connected graph, with an even number of nodes
 # Using a DSU, add edges to the graph sequentially checking for connnectivity at each edge added
@@ -68,6 +68,7 @@ def generate():
         unite(start, end)
         edges.add((start, end))
         edges.add((end, start))
+    got = len(edges)//2
     with open("contests.in", "w+") as fin:
         fin.write(f"{nodes}\n")
         while edges:
@@ -75,18 +76,18 @@ def generate():
             edges.remove((e, s))
             fin.write(f"{s} {e}\n")
         fin.write("-1 -1\n")
-    return nodes
+    return nodes, got
 
 import time
 def stress(fname, NUMTESTS=1000):
     for i in range(NUMTESTS):
-        nodes = generate()
+        nodes,edges = generate()
         start = time.time()
         subprocess.check_call(os.getcwd()+"/"+fname, stdout=None)
         if not checkSol(nodes):
             print("FAILED")
             break
-        print("COMPLETED IN", time.time()-start)
+        print("COMPLETED IN", round(time.time()-start,5), nodes, edges)
     print("-----------------")
     print(f"Completed {NUMTESTS} tests successfully")
 
@@ -101,7 +102,7 @@ def checkOne():
 
     print(isCorrect)
 
-stress("contests", 1000)
+stress("contests", 100)
 
 
 
